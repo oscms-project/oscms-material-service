@@ -1,0 +1,26 @@
+server:
+  port: 8084 # <--- 为 material-service 分配新端口
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/oscms_material_db # <--- 指向 material-service 的数据库
+    username: root
+    password: your_password # <--- 替换为您的数据库密码
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  # 配置文件上传大小限制
+  servlet:
+    multipart:
+      max-file-size: 100MB  # 单个文件最大值
+      max-request-size: 100MB # 单次请求总最大值
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 本地文件存储服务的配置
+STORAGE_LOCAL_BASE_DIR: C:/oscms_uploads/materials/ # <--- 替换为您希望的本地存储路径
+STORAGE_LOCAL_BASE_URL: http://localhost:8084/files/ # <--- URL，端口与服务端口一致
+STORAGE_LOCAL_BASE_URL_PATH: /files/

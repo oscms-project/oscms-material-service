@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: material-service # <--- 修改
+  profiles:
+    active: dev
