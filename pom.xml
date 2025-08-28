@@ -18,7 +18,9 @@
     <description>Microservice for Teaching Materials Management</description>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>22</java.version>
+        <maven.compiler.source>22</maven.compiler.source>
+        <maven.compiler.target>22</maven.compiler.target>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <fastjson2.version>2.0.43</fastjson2.version>
     </properties>
@@ -77,7 +79,14 @@
             <version>${fastjson2.version}</version>
         </dependency>
 
-        <!-- 5. Testing -->
+        <!-- 5. Swagger/OpenAPI -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+
+        <!-- 6. Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -87,6 +96,15 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.12.1</version>
+                <configuration>
+                    <source>22</source>
+                    <target>22</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
