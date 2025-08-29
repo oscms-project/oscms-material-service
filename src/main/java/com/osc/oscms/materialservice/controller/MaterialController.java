@@ -163,3 +163,136 @@ public class MaterialController {
         return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
     }
 }
+
+/**
+ * 课程资料管理控制器 - 提供RESTful风格的课程资料管理接口
+ */
+@RestController
+@RequestMapping("/courses/{courseId}/resources")
+@Tag(name = "Course Material Management", description = "课程资料管理接口")
+@RequiredArgsConstructor
+@Validated
+class CourseMaterialController {
+
+    private final MaterialService materialService;
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "上传课程资料", description = "上传文件到指定课程")
+    public ApiResponse<MaterialDto> uploadMaterial(
+            @PathVariable Long courseId,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Integer chapterOrder,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) List<String> visibleClassIds) {
+
+        MaterialUploadDto uploadDto = new MaterialUploadDto();
+        uploadDto.setFile(file);
+        uploadDto.setChapterOrder(chapterOrder);
+        uploadDto.setVisibleForClasses(visibleClassIds);
+        uploadDto.setDescription(description);
+        uploadDto.setType(type != null ? type : "DOCUMENT");
+
+        MaterialDto result = materialService.uploadMaterial(courseId, uploadDto);
+        return ApiResponse.ok(result);
+    }
+
+    @GetMapping
+    @Operation(summary = "获取课程资料列表", description = "获取指定课程的所有资料")
+    public ApiResponse<List<MaterialDto>> getCourseResources(
+            @PathVariable Long courseId,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) Integer chapterOrder) {
+
+        if (chapterOrder != null) {
+            return ApiResponse.ok(materialService.getMaterialsByChapter(courseId, chapterOrder));
+        } else {
+            return ApiResponse.ok(materialService.getMaterialsByCourseId(courseId));
+        }
+    }
+
+    @GetMapping("/{materialId}")
+    @Operation(summary = "获取资料详情", description = "根据ID获取资料详细信息")
+    public ApiResponse<MaterialDto> getMaterialById(
+            @PathVariable Long courseId,
+            @PathVariable Long materialId) {
+
+        MaterialDto material = materialService.getMaterialById(materialId);
+
+        // 验证资料是否属于指定课程
+        if (!material.getCourseId().equals(courseId)) {
+            throw new RuntimeException("资料不属于指定课程");
+        }
+
+        return ApiResponse.ok(material);
+    }
+
+    @PutMapping("/{materialId}")
+    @Operation(summary = "更新资料信息", description = "更新资料的描述、可见性等信息")
+    public ApiResponse<MaterialDto> updateMaterial(
+            @PathVariable Long courseId,
+            @PathVariable Long materialId,
+            @Valid @RequestBody MaterialDto materialDto) {
+
+        // 验证资料是否属于指定课程
+        MaterialDto existingMaterial = materialService.getMaterialById(materialId);
+        if (!existingMaterial.getCourseId().equals(courseId)) {
+            throw new RuntimeException("资料不属于指定课程");
+        }
+
+        MaterialDto result = materialService.updateMaterial(materialId, materialDto);
+        return ApiResponse.ok(result);
+    }
+
+    @DeleteMapping("/{materialId}")
+    @Operation(summary = "删除资料", description = "删除指定的课程资料")
+    public ApiResponse<Void> deleteMaterial(
+            @PathVariable Long courseId,
+            @PathVariable Long materialId) {
+
+        // 验证资料是否属于指定课程
+        MaterialDto existingMaterial = materialService.getMaterialById(materialId);
+        if (!existingMaterial.getCourseId().equals(courseId)) {
+            throw new RuntimeException("资料不属于指定课程");
+        }
+
+        materialService.deleteMaterial(materialId);
+        return ApiResponse.ok();
+    }
+
+    @GetMapping("/{materialId}/download")
+    @Operation(summary = "下载资料文件", description = "下载指定的资料文件")
+    public ResponseEntity<byte[]> downloadMaterial(
+            @PathVariable Long courseId,
+            @PathVariable Long materialId,
+            @RequestParam(required = false) Integer version) {
+
+        // 获取资料信息并验证
+        MaterialDto material = materialService.getMaterialById(materialId);
+        if (!material.getCourseId().equals(courseId)) {
+            throw new RuntimeException("资料不属于指定课程");
+        }
+
+        // 下载文件内容
+        byte[] fileContent = materialService.downloadMaterial(materialId, version);
+
+        // 获取文件信息用于设置响应头
+        MaterialVersionDto materialVersion = version != null
+                ? materialService.getMaterialVersion(materialId, version)
+                : materialService.getMaterialVersions(materialId).get(0);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", materialVersion.getFilename());
+        headers.setContentLength(fileContent.length);
+
+        return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/count")
+    @Operation(summary = "统计资料数量", description = "统计课程的资料总数")
+    public ApiResponse<Integer> countMaterials(@PathVariable Long courseId) {
+        List<MaterialDto> materials = materialService.getMaterialsByCourseId(courseId);
+        return ApiResponse.ok(materials.size());
+    }
+}

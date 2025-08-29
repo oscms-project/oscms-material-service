@@ -11,7 +11,7 @@ import java.util.Map;
  * 课程服务Feign客户端
  * 用于资料服务调用课程服务获取课程信息
  */
-@FeignClient(name = "course-service", path = "/api")
+@FeignClient(name = "oscms-course-service")
 public interface CourseServiceClient {
 
     /**
@@ -30,6 +30,6 @@ public interface CourseServiceClient {
      * 验证用户是否有课程访问权限
      */
     @GetMapping("/courses/{courseId}/users/{userId}/permission")
-    ApiResponse<Boolean> hasUserCoursePermission(@PathVariable("courseId") Long courseId, 
-                                               @PathVariable("userId") String userId);
+    ApiResponse<Boolean> hasUserCoursePermission(@PathVariable("courseId") Long courseId,
+            @PathVariable("userId") String userId);
 }

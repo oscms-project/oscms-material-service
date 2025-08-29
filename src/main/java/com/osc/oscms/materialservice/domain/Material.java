@@ -2,20 +2,32 @@ package com.osc.oscms.materialservice.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 
 /**
  * 教学资料实体类
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @TableName("osc_material")
 public class Material {
+
+    /**
+     * 主键ID
+     */
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    /**
+     * 所属课程ID
+     */
     @TableField("course_id")
     private Long courseId;
 
+    /**
+     * 章节顺序
+     */
     @TableField("chapter_order")
     private Integer chapterOrder;
 
@@ -26,9 +38,15 @@ public class Material {
     @TableField("visible_classes")
     private String visibleClasses;
 
-    @TableField(fill = FieldFill.INSERT)
+    /**
+     * 创建时间
+     */
+    @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    /**
+     * 更新时间
+     */
+    @TableField(value = "updated_at", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 }
