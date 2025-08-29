@@ -1,8 +1,9 @@
 package com.osc.oscms.materialservice.controller;
 
 import com.osc.oscms.common.response.ApiResponse;
-import com.osc.oscms.materialservice.dto.MaterialDto;
-import com.osc.oscms.materialservice.dto.MaterialVersionDto;
+import com.osc.oscms.common.dto.material.MaterialDto;
+import com.osc.oscms.common.dto.material.MaterialVersionDto;
+import com.osc.oscms.common.dto.material.MaterialUploadDto;
 import com.osc.oscms.materialservice.service.MaterialService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,10 +36,19 @@ public class MaterialController {
     public ApiResponse<MaterialDto> uploadMaterial(
             @RequestParam Long courseId,
             @RequestParam(required = false) Integer chapterOrder,
-            @RequestParam(required = false) List<Long> visibleClassIds,
+            @RequestParam(required = false) List<String> visibleClassIds,
             @RequestParam(required = false) String description,
+            @RequestParam(required = false) String type,
             @RequestParam("file") MultipartFile file) {
-        MaterialDto result = materialService.uploadMaterial(courseId, chapterOrder, visibleClassIds, description, file);
+
+        MaterialUploadDto uploadDto = new MaterialUploadDto();
+        uploadDto.setFile(file);
+        uploadDto.setChapterOrder(chapterOrder);
+        uploadDto.setVisibleForClasses(visibleClassIds);
+        uploadDto.setDescription(description);
+        uploadDto.setType(type != null ? type : "DOCUMENT");
+
+        MaterialDto result = materialService.uploadMaterial(courseId, uploadDto);
         return ApiResponse.ok(result);
     }
 
@@ -127,7 +137,7 @@ public class MaterialController {
     @Operation(summary = "设置资料可见性", description = "设置资料对哪些班级可见")
     public ApiResponse<Void> setMaterialVisibility(
             @PathVariable Long materialId,
-            @RequestBody List<Long> visibleClassIds) {
+            @RequestBody List<String> visibleClassIds) {
         materialService.setMaterialVisibility(materialId, visibleClassIds);
         return ApiResponse.ok();
     }
@@ -137,19 +147,19 @@ public class MaterialController {
     public ResponseEntity<byte[]> downloadMaterial(
             @PathVariable Long materialId,
             @RequestParam(required = false) Integer version) {
-        
+
         byte[] fileContent = materialService.downloadMaterial(materialId, version);
-        
+
         // 获取文件信息用于设置响应头
-        MaterialVersionDto materialVersion = version != null 
+        MaterialVersionDto materialVersion = version != null
                 ? materialService.getMaterialVersion(materialId, version)
                 : materialService.getMaterialVersions(materialId).get(0);
-        
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", materialVersion.getFilename());
         headers.setContentLength(fileContent.length);
-        
+
         return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
     }
 }
