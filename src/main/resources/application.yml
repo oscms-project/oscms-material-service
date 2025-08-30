@@ -95,3 +95,53 @@ jwt:
   secret: ${JWT_SECRET:YourSuperSecretKeyForJWTGenerationWhichIsVeryLongAndSecure12345!}
   expiration:
     ms: ${JWT_EXPIRATION_MS:3600000} # 1 hour
+
+---
+spring:
+  config:
+    activate:
+      on-profile: k8s
+  
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+# Eureka Client Configuration for K8s
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE}
+  instance:
+    hostname: ${EUREKA_INSTANCE_HOSTNAME}
+    prefer-ip-address: true
+
+# MyBatis Plus Configuration
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.osc.oscms.materialservice.domain
+  configuration:
+    map-underscore-to-camel-case: true
+
+# 文件存储配置 for K8s
+file:
+  storage:
+    path: ${FILE_STORAGE_PATH:/app/uploads/materials/}
+    base-url: ${FILE_BASE_URL:http://oscms-material-service:8084/files/}
+
+# JWT Configuration for K8s
+jwt:
+  secret: ${JWT_SECRET:YourSuperSecretKeyForJWTGenerationWhichIsVeryLongAndSecure12345!}
+  expiration:
+    ms: ${JWT_EXPIRATION_MS:3600000}
+
+# Logging
+logging:
+  level:
+    com.osc.oscms.materialservice: INFO
