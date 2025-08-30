@@ -3,10 +3,19 @@ FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
+# 安装 git（用于克隆 common 仓库）
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+# 构建 oscms-common 依赖
+RUN git clone https://github.com/oscms-project/oscms-common.git /tmp/oscms-common && \
+    cd /tmp/oscms-common && \
+    mvn clean install -DskipTests -Dmaven.javadoc.skip=true && \
+    rm -rf /tmp/oscms-common
+
 # 复制 pom.xml 文件
 COPY pom.xml .
 
-# 下载依赖（利用 Docker 缓存）
+# 下载依赖（现在 oscms-common 已经在本地仓库了）
 RUN mvn dependency:go-offline -B
 
 # 复制源代码
