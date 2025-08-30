@@ -1,0 +1,66 @@
+# Kubernetes 环境配置 - Material Service
+spring:
+  profiles:
+    active: k8s
+  application:
+    name: oscms-material-service
+
+# 服务器配置
+server:
+  port: 8084
+
+# 文件上传配置
+spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+# 数据库配置
+spring:
+  datasource:
+    url: jdbc:mysql://mysql-service:3306/oscms_material?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${MYSQL_USERNAME:oscms_user}
+    password: ${MYSQL_PASSWORD:oscms_password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+# Eureka 客户端配置
+eureka:
+  instance:
+    hostname: ${HOSTNAME:oscms-material-service}
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://oscms-eureka-server-service:8761/eureka/
+    registry-fetch-interval-seconds: 10
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# 文件存储配置 (K8s 可以使用 PersistentVolume)
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:/app/uploads}
+
+# 日志配置
+logging:
+  level:
+    com.osc.oscms: INFO
+    root: INFO

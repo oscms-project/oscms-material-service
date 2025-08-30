@@ -1,0 +1,62 @@
+# 测试环境配置 - Material Service
+spring:
+  profiles:
+    active: test
+  application:
+    name: oscms-material-service
+
+# 服务器配置
+server:
+  port: 0  # 随机端口，避免测试冲突
+
+# 文件上传配置 (测试环境小文件)
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# 数据库配置 - 使用 H2 内存数据库
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+
+# Eureka 客户端配置 (测试环境禁用)
+eureka:
+  client:
+    enabled: false
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,h2-console
+  endpoint:
+    health:
+      show-details: always
+
+# 文件存储配置 (测试环境使用临时目录)
+file:
+  upload-dir: ${java.io.tmpdir}/oscms-test-uploads
+
+# 日志配置
+logging:
+  level:
+    com.osc.oscms: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    root: INFO
