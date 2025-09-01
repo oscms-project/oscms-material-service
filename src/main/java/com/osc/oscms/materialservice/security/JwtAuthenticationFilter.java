@@ -1,6 +1,7 @@
 package com.osc.oscms.materialservice.security;
 
 import com.osc.oscms.common.util.JwtUtil;
+import com.osc.oscms.common.util.JwtTokenHolder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,6 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 List<String> roles = jwtUtil.getRolesFromToken(jwt);
 
                 if (userId != null && roles != null && !roles.isEmpty()) {
+                    // 将JWT token存储到ThreadLocal中，供Feign调用时使用
+                    JwtTokenHolder.setCurrentToken(jwt);
                     // 创建认证对象
                     List<SimpleGrantedAuthority> authorities = roles.stream()
                             .map(SimpleGrantedAuthority::new)
